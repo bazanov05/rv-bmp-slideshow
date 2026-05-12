@@ -6,3 +6,4 @@
 	.eqv    SYS_EXIT0, 10
 	.eqv    SYS_SBRK, 9
 	.eqv	BMP_HEADER_SIZE, 54
+	.eqv	BYTES_TO_ALLOCATE, 58
