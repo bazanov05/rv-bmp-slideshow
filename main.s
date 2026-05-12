@@ -1,26 +1,49 @@
-	.eqv	WINDOW_WIDTH, 512
-	.eqv	WIDTH_SHIFT, 9
+	.include	"syscalls.s"
+.data
+newline:.asciz	"\n"
+msg_w:	.asciz 	"width: "
+msg_h:	.asciz "height: "
+msg_p:	.asciz	"pixel offset: "
+
+.text
 main:
-	li	t1, WINDOW_WIDTH
-	slli	a0, t1, WIDTH_SHIFT	# size of window - 512 * 512
-	slli	a0, a0, 2	# number of used bytes - each pixel is 4 bytes, so size of window * 4
-	li	a7, 9		# allocate memroy on heap
-	ecall			# after this in a0 we have the address of 1st pixel
+	jal	read_bmp_metadata
 	
-	li	t0, 0x00FF00FF	# choose a colour to print
-	mv	t1, a0		# the address of the first pixel
+	bnez	a0, fin
 	
-	li	t2, WINDOW_WIDTH
-	slli	t2, t2, WIDTH_SHIFT	# the window size
-	slli	t2, t2, 2	# the number of bytes
-	add	t2, t2, t1	# the end address - begin address + window size
-loop:
-	sw	t0, 0(t1)	# store the colour
-	addi	t1, t1, 4	# go to next pixel
-	bltu	t1, t2, loop	# if we have not reached the end of vector - repeat the lopp
-fin:
-	li	a7, 10
+	la	a0, msg_w
+	li	a7, SYS_PRINT_STR	# print width info
 	ecall
+	mv	a0, a1
+	li	a7, SYS_PRINT_INT
+	ecall
+	la	a0, newline
+	li	a7, SYS_PRINT_STR
+	ecall
+	
+	la	a0, msg_h
+	li	a7, SYS_PRINT_STR	# print height info
+	ecall
+	mv	a0, a2
+	li	a7, SYS_PRINT_INT
+	ecall
+	la	a0, newline
+	li	a7, SYS_PRINT_STR
+	ecall
+	
+	la	a0, msg_p
+	li	a7, SYS_PRINT_STR	# print pixel offset info
+	ecall
+	mv	a0, a3
+	li	a7, SYS_PRINT_INT
+	ecall
+	la	a0, newline
+	li	a7, SYS_PRINT_STR
+	ecall
+	
+fin:
+	li	a7, SYS_EXIT0		# end the program
+	ecall	
 	
 	
 	
