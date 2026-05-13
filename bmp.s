@@ -1,19 +1,47 @@
 	.include	"syscalls.s"
-	.globl		read_bmp_metadata
+	.globl		load_bmp_pixels
 .data
-filename:	.asciz	"cr7.bmp"
+enter:		.asciz	"Please enter the file name to open: "
 msg_open_err:	.asciz	"File was not opened!"
-msg_read_err:	.asciz	"File was opened but not read!"
+msg_read_err:	.asciz	"File was opened but the header was not read!"
+msg_pixel_err:	.asciz	"Pixels were not read!"
+filename:	.space	BYTES_TO_ALLOCATE
 .text
-read_bmp_metadata:
-	addi	sp, sp, -32
-	sw	ra, 28(sp)
-	sw	s0, 24(sp)
-	sw	s1, 20(sp)
-	sw	s2, 16(sp)
-	sw	s3, 12(sp)
-	sw	s4, 8(sp)
+load_bmp_pixels:
+	addi	sp, sp, -48
+	sw	ra, 44(sp)
+	sw	s0, 40(sp)
+	sw	s1, 36(sp)
+	sw	s2, 32(sp)
+	sw	s3, 28(sp)
+	sw	s4, 24(sp)
+	sw	s5, 20(sp)
+	
+	la	a0, enter
+	li	a7, SYS_PRINT_STR
+	ecall
+	
+	la	a0, filename
+	li	a1, BYTES_TO_ALLOCATE
+	li	a7, SYS_READ_STR
+	ecall
+	
+strip_newline:
+	la	t0, filename	
+	li	t2, 10		# code ASCII for "\n"
 
+strip_loop:
+	lbu	t1, 0(t0)	
+	beqz	t1, strip_done	# end of string
+	beq	t1, t2, replace	# if the "\n" is found - replace it 
+	
+	addi	t0, t0, 1	# if not - incr read pointer
+	j	strip_loop
+
+replace:
+	sb	zero, 0(t0)
+
+strip_done:
 	li	a0, BYTES_TO_ALLOCATE	# allocate 58 bytes on the heap for BMP header, because of the starting address alignment
 	li	a7, SYS_SBRK
 	ecall
@@ -40,10 +68,6 @@ read_bmp_metadata:
 	li	t0, BMP_HEADER_SIZE
 	blt	a0, t0, file_read_error	# if we read less bytes than expected - we did not read the whole file
 
-	mv	a0, s1
-	li	a7, SYS_CLOSE_FILE
-	ecall
-
 	lhu	t0, 18(s0)	# lower 16 bits
 	lhu	t1, 20(s0)	# upper 16 bits
 	slli	t1, t1, 16	# shift upper 16 bits to the left
@@ -59,11 +83,7 @@ read_bmp_metadata:
 	slli	t1, t1, 16
 	or	s4, t0, t1	# pixel data offset
 
-	mv	a0, zero	# code 0 - there is no error
-	mv	a1, s2		# return width
-	mv	a2, s3		# return height
-	mv	a3, s4		# return pixel data
-	j	epilogue
+	j	allocate_memory_for_pic
 
 file_open_error:
 	la	a0, msg_open_err	# print the message about error
@@ -81,13 +101,74 @@ file_read_error:
 	li	a7, SYS_PRINT_STR
 	ecall
 	li	a0, -2			# return -2 - code of read error
+	j	epilogue
 
+file_pixel_error:
+	mv	a0, s1
+	li	a7, SYS_CLOSE_FILE	# close file anyway - despite not reading the whole file
+	ecall
+
+	la	a0, msg_pixel_err	# print the message about error
+	li	a7, SYS_PRINT_STR
+	ecall
+	li	a0, -3			# return -2 - code of read error
+	j 	epilogue
+
+allocate_memory_for_pic:
+	jal	calculate_stride
+	
+	mv	t0, s3
+	mv	t1, zero	# the num of bytes for pic will be in t1 after loop
+calculate_pic_size:
+	add	t1, t1, s5
+	addi	t0, t0, -1
+	bnez	t0, calculate_pic_size
+
+	
+	mv	a0, t1
+	li	a7, SYS_SBRK		# allocate memory on heap for pixels
+	ecall
+	
+	mv	s0, a0		# address on heap where pixels start
+	
+	mv	a0, s1		# file descriptor
+	mv	a1, s0		# where the bytes begin on the heap
+	mv	a2, t1		# the pic size
+	li	a7, SYS_READ_FILE
+	ecall
+	
+	blt	a0, t1, file_pixel_error	# if we read less bytes then expected - there is an error
+	
+	mv	a0, s1
+	li	a7, SYS_CLOSE_FILE
+	ecall
+	
+	mv	a0, zero	# error code - no error
+	mv	a1, s0		# address of pixels on the heap
+	mv	a2, s2		# width
+	mv	a3, s3		# height
+	mv	a4, s5		# stride
+	
 epilogue:
-	lw	s4, 8(sp)
-	lw	s3, 12(sp)
-	lw	s2, 16(sp)
-	lw	s1, 20(sp)
-	lw	s0, 24(sp)
-	lw	ra, 28(sp)
-	addi	sp, sp, 32
+	lw	s5, 20(sp)
+	lw	s4, 24(sp)
+	lw	s3, 28(sp)
+	lw	s2, 32(sp)
+	lw	s1, 36(sp)
+	lw	s0, 40(sp)
+	lw	ra, 44(sp)
+	addi	sp, sp, 48
+	
 	ret
+	
+calculate_stride:
+	mv	t0, s2
+	slli	t1, t0, 1
+	add	t1, t1, t0	# width * 3 - how many bytes we need per one row
+	
+	addi	t1, t1, 3	# prepare num on bytes for 4 alighment
+	andi	s5, t1, -4	# s5 - stride 
+	
+	ret
+	
+	
