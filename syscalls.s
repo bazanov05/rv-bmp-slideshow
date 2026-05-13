@@ -3,6 +3,7 @@
 	.eqv    SYS_CLOSE_FILE, 57
 	.eqv    SYS_PRINT_INT, 1
 	.eqv    SYS_PRINT_STR, 4
+	.eqv	SYS_READ_STR, 8
 	.eqv    SYS_EXIT0, 10
 	.eqv    SYS_SBRK, 9
 	.eqv	BMP_HEADER_SIZE, 54
