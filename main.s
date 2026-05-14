@@ -8,6 +8,15 @@ msg_stride:	.asciz	"stride: "
 msg_sign:	.asciz	"height's sign: "
 .text
 main:
+	lw	s11, 0(a1)
+	
+	li	a0, SCREEN_WIDTH
+	slli	a0, a0, 9	# width * height
+	slli	a0, a0, 2	# width * height * 4 bytes
+	li	a7, SYS_SBRK
+	ecall
+	
+	mv	a0, s11
 	jal	load_bmp_pixels
 	
 	bnez	a0, fin
@@ -67,6 +76,8 @@ main:
 	la	a0, newline
 	li	a7, SYS_PRINT_STR
 	ecall
+	
+	jal	draw_image
 	
 fin:
 	li	a7, SYS_EXIT0		# end the program
