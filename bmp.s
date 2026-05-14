@@ -1,11 +1,9 @@
 	.include	"syscalls.s"
 	.globl		load_bmp_pixels
 .data
-enter:		.asciz	"Please enter the file name to open: "
 msg_open_err:	.asciz	"File was not opened!"
 msg_read_err:	.asciz	"File was opened but the header was not read!"
 msg_pixel_err:	.asciz	"Pixels were not read!"
-filename:	.space	BYTES_TO_ALLOCATE
 .text
 load_bmp_pixels:
 	addi	sp, sp, -48
@@ -17,32 +15,10 @@ load_bmp_pixels:
 	sw	s4, 24(sp)	# pixel pic on heap
 	sw	s5, 20(sp)	# stride
 	sw	s6, 16(sp)	# flag for height's sign
+	sw	s7, 12(sp)	# filename from main.s
 	
-	la	a0, enter
-	li	a7, SYS_PRINT_STR
-	ecall
+	mv	s7, a0		# s7 now contains file name
 	
-	la	a0, filename
-	li	a1, BYTES_TO_ALLOCATE
-	li	a7, SYS_READ_STR
-	ecall
-	
-strip_newline:
-	la	t0, filename	
-	li	t2, 10		# code ASCII for "\n"
-
-strip_loop:
-	lbu	t1, 0(t0)	
-	beqz	t1, strip_done	# end of string
-	beq	t1, t2, replace	# if the "\n" is found - replace it 
-	
-	addi	t0, t0, 1	# if not - incr read pointer
-	j	strip_loop
-
-replace:
-	sb	zero, 0(t0)
-
-strip_done:
 	li	a0, BYTES_TO_ALLOCATE	# allocate 58 bytes on the heap for BMP header, because of the starting address alignment
 	li	a7, SYS_SBRK
 	ecall
@@ -50,7 +26,7 @@ strip_done:
 	addi	t0, a0, 3		# prepare address for 4 byte alignment
 	andi	s0, t0, -4		# round address down to nearest multiple of 4
 
-	la	a0, filename
+	mv	a0, s7
 	mv	a1, zero	# read-only operation
 	li	a7, SYS_OPEN_FILE
 	ecall
@@ -140,6 +116,12 @@ calculate_pic_size:
 	mv	s0, a0		# address on heap where pixels start
 	
 	mv	a0, s1		# file descriptor
+	mv	a1, s4		# offset of pixel data
+	mv	a2, zero	# offset relative to the beginning of the file
+	li	a7, SYS_LSEEK
+	ecall
+	
+	mv	a0, s1		# file descriptor
 	mv	a1, s0		# where the bytes begin on the heap
 	mv	a2, t1		# the pic size
 	li	a7, SYS_READ_FILE
@@ -159,6 +141,7 @@ calculate_pic_size:
 	mv	a5, s6		# height's sign
 	
 epilogue:
+	lw	s7, 12(sp)
 	lw	s6, 16(sp)
 	lw	s5, 20(sp)
 	lw	s4, 24(sp)
