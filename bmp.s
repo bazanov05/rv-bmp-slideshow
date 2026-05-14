@@ -9,13 +9,14 @@ filename:	.space	BYTES_TO_ALLOCATE
 .text
 load_bmp_pixels:
 	addi	sp, sp, -48
-	sw	ra, 44(sp)
-	sw	s0, 40(sp)
-	sw	s1, 36(sp)
-	sw	s2, 32(sp)
-	sw	s3, 28(sp)
-	sw	s4, 24(sp)
-	sw	s5, 20(sp)
+	sw	ra, 44(sp)	# return address
+	sw	s0, 40(sp)	# address on heap
+	sw	s1, 36(sp)	# file descriptor 
+	sw	s2, 32(sp)	# width
+	sw	s3, 28(sp)	# height
+	sw	s4, 24(sp)	# pixel pic on heap
+	sw	s5, 20(sp)	# stride
+	sw	s6, 16(sp)	# flag for height's sign
 	
 	la	a0, enter
 	li	a7, SYS_PRINT_STR
@@ -77,7 +78,14 @@ strip_done:
 	lhu	t1, 24(s0)	# upper 16 bits
 	slli	t1, t1, 16	# shift upper 16 bits to the left
 	or	s3, t0, t1	# load the whole height to s3
+	
+	mv	s6, zero	# height is positive
+	bgtz	s3, height_is_positive
+	
+	sub	s3, zero, s3 	# abs(height)
+	li	s6, 1		# height is negative
 
+height_is_positive:
 	lhu	t0, 10(s0)	# pixel data offset is on the 10th position
 	lhu	t1, 12(s0)
 	slli	t1, t1, 16
@@ -148,8 +156,10 @@ calculate_pic_size:
 	mv	a2, s2		# width
 	mv	a3, s3		# height
 	mv	a4, s5		# stride
+	mv	a5, s6		# height's sign
 	
 epilogue:
+	lw	s6, 16(sp)
 	lw	s5, 20(sp)
 	lw	s4, 24(sp)
 	lw	s3, 28(sp)
