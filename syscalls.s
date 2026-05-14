@@ -8,3 +8,6 @@
 	.eqv    SYS_SBRK, 9
 	.eqv	BMP_HEADER_SIZE, 54
 	.eqv	BYTES_TO_ALLOCATE, 58
+	.eqv	SCREEN_WIDTH, 512
+	.eqv	SCREEN_HEIGHT, 512
+	.eqv	SYS_LSEEK, 62
