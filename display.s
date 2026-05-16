@@ -6,28 +6,27 @@ draw_image:
 	sw	ra, 44(sp)
 	sw	s0, 40(sp)	# x offset
 	sw	s1, 36(sp)	# y offset
-	
-	mv	s2, a2		# pic width
-	mv	s3, a3		# pic height
-	mv	s4, a4		# stride
-	mv	s5, a5		# height's sign
-	mv	s6, a1		# pixel offset
-	
 	sw	s2, 32(sp)
 	sw	s3, 28(sp)
 	sw	s4, 24(sp)
 	sw	s5, 20(sp)
 	sw	s6, 16(sp)
 	sw	s7, 12(sp)
-		
-	jal	calculate_pic_offsets
 	
+	mv	s0, a6		# x_begin
+	mv	s1, a7		# y_offset
+	mv	s2, a2		# pic width
+	mv	s3, a3		# pic height
+	mv	s4, a4		# stride
+	mv	s5, a5		# height's sign
+	mv	s6, a1		# pixel offset
+		
 	mv	s7, s3		# outer loop counter - height
 	
 	add	t1, s1, s3
 	addi	t1, t1, -1	# start from bottom, in t1 i have curr_y
 	li	t2, -1		# in t2 i have a loop step - if we start on bottom we should incr
-	li   t0, 0x10040000      # load base heap address
+	li   	t0, 0x10040000      # load base heap address
 	
 	beqz	s5, outer_loop	# if the sigh on height is positive - start drawing from bottom 
 	
@@ -53,6 +52,10 @@ inner_loop:
 	
 	
 	addi	s6, s6, 3	# go to next 3 bytes to read next pixel
+	
+	bltz	t4, skip_pixel	# if we are out of screen from the left - do not draw pixel
+	li	a3, SCREEN_WIDTH
+	bge	t4, a3, skip_pixel	# if we are out of screen from the right - do not draw the pixel
 	 
 	slli	a7, t1, 9      	# a7 = y * 512
 	add	a7, a7, t4      # a7 = (y * 512) + x
@@ -62,6 +65,7 @@ inner_loop:
 	
 	sw	a0, 0(a7)       # show pixel on the screen
 	
+skip_pixel:
 	addi	t5, t5, -1
 	addi	t4, t4, 1	# go to next pixel
 	
@@ -90,13 +94,3 @@ epilogue:
 	
 	ret
 	
-calculate_pic_offsets:
-	li	t0, SCREEN_WIDTH
-	sub	s0, t0, s2
-	srli	s0, s0, 1
-	
-	li	t0, SCREEN_HEIGHT
-	sub	s1, t0, s3
-	srli	s1, s1, 1
-	
-	ret
