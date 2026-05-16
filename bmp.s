@@ -69,35 +69,6 @@ height_is_positive:
 
 	j	allocate_memory_for_pic
 
-file_open_error:
-	la	a0, msg_open_err	# print the message about error
-	li	a7, SYS_PRINT_STR
-	ecall
-	li	a0, -1			# return -1 - code of open error
-	j	epilogue
-
-file_read_error:
-	mv	a0, s1
-	li	a7, SYS_CLOSE_FILE	# close file anyway - despite not reading the whole file
-	ecall
-
-	la	a0, msg_read_err	# print the message about error
-	li	a7, SYS_PRINT_STR
-	ecall
-	li	a0, -2			# return -2 - code of read error
-	j	epilogue
-
-file_pixel_error:
-	mv	a0, s1
-	li	a7, SYS_CLOSE_FILE	# close file anyway - despite not reading the whole file
-	ecall
-
-	la	a0, msg_pixel_err	# print the message about error
-	li	a7, SYS_PRINT_STR
-	ecall
-	li	a0, -3			# return -3 - code of read pixel error
-	j 	epilogue
-
 allocate_memory_for_pic:
 	jal	calculate_stride
 	
@@ -147,7 +118,35 @@ epilogue:
 	addi	sp, sp, 48
 	
 	ret
-	
+file_open_error:
+	la	a0, msg_open_err	# print the message about error
+	li	a7, SYS_PRINT_STR
+	ecall
+	li	a0, -1			# return -1 - code of open error
+	j	epilogue
+
+file_read_error:
+	mv	a0, s1
+	li	a7, SYS_CLOSE_FILE	# close file anyway - despite not reading the whole file
+	ecall
+
+	la	a0, msg_read_err	# print the message about error
+	li	a7, SYS_PRINT_STR
+	ecall
+	li	a0, -2			# return -2 - code of read error
+	j	epilogue
+
+file_pixel_error:
+	mv	a0, s1
+	li	a7, SYS_CLOSE_FILE	# close file anyway - despite not reading the whole file
+	ecall
+
+	la	a0, msg_pixel_err	# print the message about error
+	li	a7, SYS_PRINT_STR
+	ecall
+	li	a0, -3			# return -3 - code of read pixel error
+	j 	epilogue
+
 calculate_stride:
 	mv	t0, s2
 	slli	t1, t0, 1
