@@ -101,13 +101,7 @@ file_pixel_error:
 allocate_memory_for_pic:
 	jal	calculate_stride
 	
-	mv	t0, s3
-	mv	t1, zero	# the num of bytes for pic will be in t1 after loop
-calculate_pic_size:
-	add	t1, t1, s5
-	addi	t0, t0, -1
-	bnez	t0, calculate_pic_size
-
+	mul	t1, s3, s5		# pic's size in bytes
 	
 	mv	a0, t1
 	li	a7, SYS_SBRK		# allocate memory on heap for pixels
