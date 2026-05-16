@@ -100,17 +100,17 @@ slide_loop:
 	
 	jal	draw_image
 	
-	li	a0, 10		# sleep for 10 ms
+	li	a0, 2		# sleep for 2 ms
 	li	a7, SYS_SLEEP
 	ecall
 	
 	la	t0, step
 	lw	t3, 0(t0)
-	addi	t3, t3, 8	# incr step
+	addi	t3, t3, 128	# incr step
 	sw	t3, 0(t0)
 	
 	li	t4, SCREEN_WIDTH
-	blt	t3, t4, slide_loop
+	ble	t3, t4, slide_loop
 	
 	la	t0, swap_done
 	lbu	t1, 0(t0)
