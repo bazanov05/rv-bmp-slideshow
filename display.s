@@ -57,6 +57,10 @@ inner_loop:
 	bltz	t4, skip_pixel	# if we are out of screen from the left - do not draw pixel
 	li	a3, SCREEN_WIDTH
 	bge	t4, a3, skip_pixel	# if we are out of screen from the right - do not draw the pixel
+	
+	bltz    t1, skip_pixel	# if the y < 0 - skip pixel
+	li      a3, SCREEN_HEIGHT
+	bge     t1, a3, skip_pixel	# if y >= screen height - skip pixel
 	 
 	slli	a7, t1, 9      	# a7 = y * 512
 	add	a7, a7, t4      # a7 = (y * 512) + x
