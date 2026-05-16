@@ -1,5 +1,6 @@
 	.include	"syscalls.s"
 	.globl		draw_image
+	.globl		clear_screen
 .text
 draw_image:
 	addi	sp, sp, -48
@@ -94,3 +95,17 @@ epilogue:
 	
 	ret
 	
+clear_screen:
+	li	t0, 0x10040000	# base heap address
+	li	t1, 0		# black colour
+	li	t2, SCREEN_WIDTH
+	li	t3, SCREEN_HEIGHT	
+	mul	t4, t2, t3	# pixels per screen
+	
+clear_loop:
+	sw	t1, 0(t0)
+	addi	t0, t0, 4	# cause 4 bytes per pixel
+	addi	t4, t4, -1
+	bnez	t4, clear_loop
+	
+	ret
