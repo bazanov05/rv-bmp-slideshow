@@ -11,3 +11,4 @@
 	.eqv	SCREEN_WIDTH, 512
 	.eqv	SCREEN_HEIGHT, 512
 	.eqv	SYS_LSEEK, 62
+	.eqv 	SYS_SLEEP, 32
