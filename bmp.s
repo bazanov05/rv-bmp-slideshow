@@ -95,7 +95,7 @@ file_pixel_error:
 	la	a0, msg_pixel_err	# print the message about error
 	li	a7, SYS_PRINT_STR
 	ecall
-	li	a0, -3			# return -2 - code of read error
+	li	a0, -3			# return -3 - code of read pixel error
 	j 	epilogue
 
 allocate_memory_for_pic:
