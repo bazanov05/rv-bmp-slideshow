@@ -35,8 +35,7 @@ draw_image:
 	li	t2, 1		# step is 1 - incr
 
 outer_loop:
-	mv	t3, t1		# the address of current row
-	mv	t4, s0		# x_curr = x_offset 
+	mv	t4, s0		# x_curr = x_begin 
 	mv	t5, s2		# counter for inner loop is width - how many pixels we should draw in this row
 	mv	t6, s6		# save old pixel addres, so after reading one row add stride to it to come to a new one
 	
