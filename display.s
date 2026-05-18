@@ -5,8 +5,8 @@
 draw_image:
 	addi	sp, sp, -48
 	sw	ra, 44(sp)
-	sw	s0, 40(sp)	# x offset
-	sw	s1, 36(sp)	# y offset
+	sw	s0, 40(sp)	# x_begin - where to start drawing 
+	sw	s1, 36(sp)	# y_begin - always alighned 
 	sw	s2, 32(sp)
 	sw	s3, 28(sp)
 	sw	s4, 24(sp)
@@ -20,7 +20,7 @@ draw_image:
 	mv	s3, a3		# pic height
 	mv	s4, a4		# stride
 	mv	s5, a5		# height's sign
-	mv	s6, a1		# pixel offset
+	mv	s6, a1		# pixel offset - the address of pixel bytes on the heap
 		
 	mv	s7, s3		# outer loop counter - height
 	
@@ -79,7 +79,7 @@ skip_pixel:
 	add	t6, t6, s4	# add to current pixel address stride to come to new row
 	mv	s6, t6		# update pixel start
 	
-	add	t1, t1, t2	# update row - eithet incr or decr(depending on t2, which step based on sheight sign)
+	add	t1, t1, t2	# update row - either incr or decr(depending on t2, which step based on height's sign)
 
 	addi	s7, s7, -1	# update the outer loop counter which is height
 	

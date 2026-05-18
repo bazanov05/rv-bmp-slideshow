@@ -69,7 +69,7 @@ slide_loop:
 	la	t1, step
 	lw	t2, 0(t0)
 	lw	t3, 0(t1)
-	sub	a6, t2, t3	# x_curr = x_center - offset
+	sub	a6, t2, t3	# x_curr = x_center - step
 	
 	la	t0, cy1
 	lw	a7, 0(t0)
