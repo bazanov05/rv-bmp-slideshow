@@ -72,7 +72,7 @@ slide_loop:
 	sub	a6, t2, t3	# x_curr = x_center - step
 	
 	la	t0, cy1
-	lw	a7, 0(t0)
+	lw	a7, 0(t0)	# we always have height's alighment (y)
 	
 	mv	a1, s0		# pixel address
 	mv	a2, s1		# pic's width
@@ -119,10 +119,6 @@ slide_loop:
 	addi	t1, t1, 1
 	sb	t1, 0(t0)
 	
-	li	a0, 2000	# sleep for 2000 ms
-	li	a7, SYS_SLEEP
-	ecall
-	
 swap:
 	mv	t0, s0
 	mv	s0, s5
@@ -157,6 +153,10 @@ swap:
 	lw	t3, 0(t2)
 	sw	t3, 0(t0)
 	sw	t1, 0(t2)	# swap y_center
+	
+	li	a0, 2000	# sleep for 2000 ms
+	li	a7, SYS_SLEEP
+	ecall
 	
 	j	animation_loop
 fin:
